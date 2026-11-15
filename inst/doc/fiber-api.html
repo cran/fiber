@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A technical, exhaustive description of the fiber classes, slots, read-only properties, generics, methods, subsetting semantics, and coercion rules.">
+
+<title>The fiber API</title>
+<style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+width: 0.8em;
+margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+}
+pre.numberSource { margin-left: 3em; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+</style>
+</head>
+
+<body>
+
+
+<header id="title-block-header">
+<h1 class="title">The fiber API</h1>
+
+</header>
+
+
+<p>This vignette is the reference for <strong>fiber</strong>’s programming interface. It describes every class, slot, read-only property, generic, and method, together with the subsetting (“push-down”) semantics and the coercion rules between fiber classes and the <code>dwiFiber</code> S4 class of the <a href="https://cran.r-project.org/package=dti">dti</a> package. For a gentler introduction, see the <a href="fiber.qmd">getting started</a> vignette.</p>
+<p>The package defines three <a href="https://rconsortium.github.io/S7/">S7</a> classes:</p>
+<ul>
+<li><a href="#class-streamline">streamline</a></li>
+<li><a href="#class-bundle">bundle</a></li>
+<li><a href="#class-bundle_set">bundle_set</a></li>
+</ul>
+<p>and a set of generics and functions:</p>
+<ul>
+<li>Constructors &amp; predicates: <code>streamline()</code>, <code>bundle()</code>, <code>bundle_set()</code>, <code>is_streamline()</code>, <code>is_bundle()</code>, <code>is_bundle_set()</code></li>
+<li>Combination: <code>bind_bundles()</code>, <code>bind_bundle_sets()</code></li>
+<li>Reparametrisation: <code>reparametrize()</code></li>
+<li>Shape descriptors: <code>get_euclidean_length()</code>, <code>get_curvilinear_length()</code>, <code>get_sinuosity()</code>, <code>get_curvature()</code>, <code>get_torsion()</code>, <code>add_shape_descriptors()</code></li>
+<li>Distances: <code>compute_hausdorff_distance()</code></li>
+<li>Coercion: <code>as_streamline()</code>, <code>as_bundle()</code>, <code>as_bundle_set()</code>, <code>as_dwifiber()</code></li>
+</ul>
+<h2 id="class-streamline">Class: streamline</h2>
+<p>A <code>streamline</code> represents a single fibre tract as a polyline of 3-D points. It stores three compartments:</p>
+<h3 id="slots">Slots</h3>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 61%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Slot</th>
+<th>Type / shape</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@points</code></td>
+<td><code>P x 3</code> numeric matrix, columns <code>&quot;X&quot;</code>, <code>&quot;Y&quot;</code>, <code>&quot;Z&quot;</code></td>
+<td>The 3-D coordinates of the <code>P</code> points along the tract.</td>
+</tr>
+<tr class="even">
+<td><code>@point_data</code></td>
+<td>named list of numeric vectors, each of length <code>P</code></td>
+<td>Per-point scalar attributes (e.g. fractional anisotropy). <code>&quot;X&quot;</code> / <code>&quot;Y&quot;</code> / <code>&quot;Z&quot;</code> are <strong>not</strong> allowed here.</td>
+</tr>
+<tr class="odd">
+<td><code>@streamline_data</code></td>
+<td>named list of scalars (length 1, any type)</td>
+<td>Per-streamline attributes (e.g. mean FA or a character label).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="read-only-properties">Read-only properties</h3>
+<table class="caption-top">
+<colgroup>
+<col style="width: 55%">
+<col style="width: 26%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@n_points</code></td>
+<td>integer</td>
+<td>Number of points (<code>nrow(@points)</code>).</td>
+</tr>
+<tr class="even">
+<td><code>@point_attributes</code></td>
+<td>character</td>
+<td>Names of the entries in <code>@point_data</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>@streamline_attributes</code></td>
+<td>character</td>
+<td>Names of the entries in <code>@streamline_data</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="construction">Construction</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>sl <span class="ot">&lt;-</span> <span class="fu">streamline</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">Y =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">Z =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">point_data =</span> <span class="fu">list</span>(<span class="at">FA =</span> <span class="fu">runif</span>(<span class="dv">5</span>)),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">streamline_data =</span> <span class="fu">list</span>(<span class="at">label =</span> <span class="st">&quot;CST&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>sl</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── Object of class `fiber::streamline()` with 5 points. ──</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; • Point attributes: &quot;FA&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; • Streamline attributes: &quot;label&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>sl<span class="sc">@</span>n_points</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 5</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>sl<span class="sc">@</span>point_attributes</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;FA&quot;</span></span></code></pre></div>
+</div>
+<p>The validator insists that <code>@points</code> is a numeric <code>P x 3</code> matrix with column names exactly <code>c(&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;)</code>, that every <code>@point_data</code> entry is a numeric vector of length <code>P</code>, and that every <code>@streamline_data</code> entry has length 1.</p>
+<h3 id="method-surface">Method surface</h3>
+<p><code>format()</code> returns a cli-formatted string; <code>print()</code> prints it and returns the object invisibly.</p>
+<h2 id="class-bundle">Class: bundle</h2>
+<p>A <code>bundle</code> is an ordered collection of <code>streamline</code> objects, e.g. a tractogram.</p>
+<h3 id="slots-1">Slots</h3>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 61%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Slot</th>
+<th>Type / shape</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@streamlines</code></td>
+<td>list of <code>streamline</code> objects</td>
+<td>The individual tracts.</td>
+</tr>
+<tr class="even">
+<td><code>@streamline_data</code></td>
+<td>named list of vectors, each of length <code>S</code></td>
+<td>Per-streamline attributes aggregated at the bundle level. Common keys may be lifted here automatically at construction.</td>
+</tr>
+<tr class="odd">
+<td><code>@bundle_data</code></td>
+<td>named list of scalars (length 1, any type)</td>
+<td>Bundle-level metadata.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="read-only-properties-1">Read-only properties</h3>
+<table class="caption-top">
+<colgroup>
+<col style="width: 55%">
+<col style="width: 25%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@n_streamlines</code></td>
+<td>integer</td>
+<td>Number of streamlines.</td>
+</tr>
+<tr class="even">
+<td><code>@streamline_attributes</code></td>
+<td>character</td>
+<td>Names of the entries in <code>@streamline_data</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>@bundle_attributes</code></td>
+<td>character</td>
+<td>Names of the entries in <code>@bundle_data</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="automatic-lifting">Automatic lifting</h3>
+<p>At construction, any <code>@streamline_data</code> key present in <strong>all</strong> supplied streamlines is copied into <code>bundle@streamline_data</code> as a length-<code>S</code> vector, and the key is then not stored redundantly in each streamline. Values supplied explicitly via the <code>streamline_data</code> argument take precedence.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sl1 <span class="ot">&lt;-</span> <span class="fu">streamline</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">Y =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">Z =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">streamline_data =</span> <span class="fu">list</span>(<span class="at">mean_FA =</span> <span class="fl">0.6</span>, <span class="at">label =</span> <span class="st">&quot;A&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>sl2 <span class="ot">&lt;-</span> <span class="fu">streamline</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">Y =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">Z =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">streamline_data =</span> <span class="fu">list</span>(<span class="at">mean_FA =</span> <span class="fl">0.7</span>, <span class="at">label =</span> <span class="st">&quot;A&quot;</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">bundle</span>(<span class="at">streamlines =</span> <span class="fu">list</span>(sl1, sl2))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>b<span class="sc">@</span>streamline_data<span class="sc">$</span>mean_FA <span class="co"># c(0.6, 0.7) — lifted automatically</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.6 0.7</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>b<span class="sc">@</span>streamline_attributes <span class="co"># c(&quot;mean_FA&quot;, &quot;label&quot;)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;mean_FA&quot; &quot;label&quot;</span></span></code></pre></div>
+</div>
+<p>The bundle validator requires every element of <code>@streamlines</code> to be a <code>streamline</code> (with no duplicate names), every <code>@streamline_data</code> entry to have length <code>S</code>, and every <code>@bundle_data</code> entry to have length 1.</p>
+<h3 id="subsetting-and-push-down">Subsetting and push-down</h3>
+<p><code>bundle[[i]]</code> extracts the <code>i</code>-th streamline and <strong>pushes back</strong> the corresponding <code>bundle@streamline_data</code> values into the streamline’s <code>@streamline_data</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>b[[<span class="dv">1</span>]]<span class="sc">@</span>streamline_data<span class="sc">$</span>mean_FA <span class="co"># 0.6</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.6</span></span></code></pre></div>
+</div>
+<p><code>bundle[i]</code> returns a new <code>bundle</code> with only the selected streamlines, preserving <code>@bundle_data</code> and the subset of <code>@streamline_data</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>b[<span class="dv">1</span>]<span class="sc">@</span>streamline_data<span class="sc">$</span>mean_FA <span class="co"># c(0.6)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.6</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>b[<span class="dv">1</span>]<span class="sc">@</span>streamline_data<span class="sc">$</span>label <span class="co"># &quot;A&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;A&quot;</span></span></code></pre></div>
+</div>
+<h2 id="class-bundle_set">Class: bundle_set</h2>
+<p>A <code>bundle_set</code> is a collection of <code>bundle</code> objects. It is designed for two closely related use cases: grouping the multiple white-matter bundles of a single subject, or grouping bundles across subjects / sessions in a multi-subject / multi-session study.</p>
+<h3 id="slots-2">Slots</h3>
+<table class="caption-top">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 58%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Slot</th>
+<th>Type / shape</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@bundles</code></td>
+<td>list of <code>bundle</code> objects (names optional)</td>
+<td>One element per bundle (e.g. per white-matter bundle of a subject, or per subject / session).</td>
+</tr>
+<tr class="even">
+<td><code>@bundle_data</code></td>
+<td>named list of vectors, each of length <code>B</code></td>
+<td>Per-bundle attributes aggregated at the set level.</td>
+</tr>
+<tr class="odd">
+<td><code>@bundle_set_data</code></td>
+<td>named list of scalars (length 1, any type)</td>
+<td>Set-level metadata.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="read-only-properties-2">Read-only properties</h3>
+<table class="caption-top">
+<colgroup>
+<col style="width: 56%">
+<col style="width: 25%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@n_bundles</code></td>
+<td>integer</td>
+<td>Number of bundles.</td>
+</tr>
+<tr class="even">
+<td><code>@bundle_attributes</code></td>
+<td>character</td>
+<td>Names of the entries in <code>@bundle_data</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>@bundle_set_attributes</code></td>
+<td>character</td>
+<td>Names of the entries in <code>@bundle_set_data</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="names-become-id_from_input_names">Names become <code>id_from_input_names</code></h3>
+<p>If the input <code>bundles</code> list is named (e.g. <code>list(&quot;sub-01&quot; = b1, &quot;sub-02&quot; = b2)</code>), the names are transferred into <code>bundle_set@bundle_data</code> under the key <code>id_from_input_names</code> and the names are then dropped from <code>@bundles</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>b_sub01 <span class="ot">&lt;-</span> <span class="fu">bundle</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">streamlines =</span> <span class="fu">list</span>(sl1),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">bundle_data =</span> <span class="fu">list</span>(<span class="at">subject =</span> <span class="st">&quot;sub-01&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>b_sub02 <span class="ot">&lt;-</span> <span class="fu">bundle</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">streamlines =</span> <span class="fu">list</span>(sl2),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">bundle_data =</span> <span class="fu">list</span>(<span class="at">subject =</span> <span class="st">&quot;sub-02&quot;</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>bs <span class="ot">&lt;-</span> <span class="fu">bundle_set</span>(<span class="fu">list</span>(<span class="st">&quot;sub-01&quot;</span> <span class="ot">=</span> b_sub01, <span class="st">&quot;sub-02&quot;</span> <span class="ot">=</span> b_sub02))</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>bs<span class="sc">@</span>bundle_data<span class="sc">$</span>id_from_input_names <span class="co"># c(&quot;sub-01&quot;, &quot;sub-02&quot;)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sub-01&quot; &quot;sub-02&quot;</span></span></code></pre></div>
+</div>
+<p>As with bundles, common <code>@bundle_data</code> keys are lifted automatically at construction, and the explicit <code>bundle_data</code> argument takes precedence.</p>
+<h3 id="subsetting-and-push-down-1">Subsetting and push-down</h3>
+<p><code>bundle_set[[i]]</code> extracts the <code>i</code>-th bundle and pushes the matching <code>bundle_set@bundle_data</code> values into the bundle’s <code>@bundle_data</code>. <code>bundle_set[i]</code> returns a new <code>bundle_set</code> with <code>@bundle_set_data</code> and the subset of <code>@bundle_data</code> preserved.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>bs[[<span class="st">&quot;sub-01&quot;</span>]]<span class="sc">@</span>bundle_data<span class="sc">$</span>subject <span class="co"># &quot;sub-01&quot; (pushed down)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sub-01&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>bs[<span class="dv">1</span>]<span class="sc">@</span>bundle_data<span class="sc">$</span>subject <span class="co"># &quot;sub-01&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sub-01&quot;</span></span></code></pre></div>
+</div>
+<h2 id="predicates">Predicates</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Returns <code>TRUE</code> when <code>x</code> is …</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>is_streamline(x)</code></td>
+<td>a <code>streamline</code></td>
+</tr>
+<tr class="even">
+<td><code>is_bundle(x)</code></td>
+<td>a <code>bundle</code></td>
+</tr>
+<tr class="odd">
+<td><code>is_bundle_set(x)</code></td>
+<td>a <code>bundle_set</code></td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_streamline</span>(sl) <span class="co"># TRUE</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">is_bundle</span>(sl) <span class="co"># FALSE</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">is_bundle_set</span>(bs) <span class="co"># TRUE</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<h2 id="combination">Combination</h2>
+<h3 id="bind_bundles">bind_bundles()</h3>
+<p><code>bind_bundles(...)</code> combines any mix of <code>streamline</code> and <code>bundle</code> objects into a single flat <code>bundle</code>. <code>bundle_data</code> and <code>streamline_data</code> from the first <code>bundle</code> argument are preserved by default; pass your own via the <code>streamline_data</code> and <code>bundle_data</code> arguments to override. Keys present in only some inputs are NA-padded for the others.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>b_all <span class="ot">&lt;-</span> <span class="fu">bind_bundles</span>(sl1, b)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>b_all<span class="sc">@</span>n_streamlines <span class="co"># 3</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span></code></pre></div>
+</div>
+<h3 id="bind_bundle_sets">bind_bundle_sets()</h3>
+<p><code>bind_bundle_sets(...)</code> combines any mix of <code>bundle</code> and <code>bundle_set</code> objects into a single flat <code>bundle_set</code>. Bare <code>bundle</code> arguments may be named to carry their name into the resulting set (with <code>id_from_input_names</code> populated accordingly), or left unnamed. <code>bundle_data</code> from the first <code>bundle_set</code> argument is preserved by default; pass your own via <code>bundle_data</code> or <code>bundle_set_data</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>bs_merged <span class="ot">&lt;-</span> <span class="fu">bind_bundle_sets</span>(<span class="st">&quot;sub-A&quot;</span> <span class="ot">=</span> b_sub01, bs)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>bs_merged<span class="sc">@</span>n_bundles <span class="co"># 3</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span></code></pre></div>
+</div>
+<h2 id="reparametrisation">Reparametrisation</h2>
+<p><code>reparametrize(x, n_points = NULL)</code> resamples coordinates (and any numeric <code>@point_data</code> entries) onto a uniform arc-length grid by linear interpolation.</p>
+<ul>
+<li>For a <code>streamline</code>, <code>n_points</code> defaults to <code>x@n_points</code>.</li>
+<li>For a <code>bundle</code>, it defaults to the rounded mean number of points across its streamlines, and every streamline is resampled to the same grid size.</li>
+<li>For a <code>bundle_set</code>, each bundle is reparametrized independently (defaulting, per bundle, to the rounded mean across that bundle’s streamlines).</li>
+</ul>
+<p>Non-numeric <code>@point_data</code> entries are dropped with a warning (they have no natural arc-length interpolant). <code>@streamline_data</code>, <code>@bundle_data</code>, and <code>@bundle_set_data</code> are preserved unchanged.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sl_20 <span class="ot">&lt;-</span> <span class="fu">reparametrize</span>(sl1, <span class="at">n_points =</span> <span class="dv">20</span>L)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>sl_20<span class="sc">@</span>n_points <span class="co"># 20</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>b_20 <span class="ot">&lt;-</span> <span class="fu">reparametrize</span>(b, <span class="at">n_points =</span> <span class="dv">20</span>L)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>b_20[[<span class="dv">1</span>]]<span class="sc">@</span>n_points <span class="co"># 20</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span></code></pre></div>
+</div>
+<p><code>n_points</code> must be at least 2.</p>
+<h2 id="shape-descriptors">Shape descriptors</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 78%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>get_euclidean_length(x)</code></td>
+<td>Straight-line distance between the endpoints (resolution-<code>P</code> independent).</td>
+</tr>
+<tr class="even">
+<td><code>get_curvilinear_length(x)</code></td>
+<td>Total arc-length (sum of Euclidean segment lengths).</td>
+</tr>
+<tr class="odd">
+<td><code>get_sinuosity(x)</code></td>
+<td>Curvilinear / Euclidean ratio (1 = straight; larger = curvier).</td>
+</tr>
+<tr class="even">
+<td><code>get_curvature(x)</code></td>
+<td>Per-point curvature profile (length <code>P</code>), via cubic smoothing splines.</td>
+</tr>
+<tr class="odd">
+<td><code>get_torsion(x)</code></td>
+<td>Per-point torsion profile (length <code>P</code>), via cubic smoothing splines.</td>
+</tr>
+</tbody>
+</table>
+<p><code>get_curvature()</code> and <code>get_torsion()</code> are per-point profile descriptors: they fit smoothing splines to each coordinate along the arc-length abscissa, so they need at least four distinct points and are well defined only where the tract is actually curved. On a perfectly straight segment, curvature is identically zero and torsion (which measures out-of-plane twisting) is undefined (<code>NaN</code>). The helix below is a good curve to illustrate both, because it is genuinely curved in every direction:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>sl_curve <span class="ot">&lt;-</span> <span class="fu">streamline</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">cbind</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">X =</span> <span class="fu">cos</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">21</span>)),</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Y =</span> <span class="fu">sin</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">21</span>)),</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Z =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">21</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Scalar descriptors are fine on any streamline</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="fu">get_euclidean_length</span>(sl1)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 6.928203</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">get_curvilinear_length</span>(sl1)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 6.928203</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="fu">get_sinuosity</span>(sl1)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Per-point profiles are meaningful on a truly curved tract</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">get_curvature</span>(sl_curve))</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 2.547019e-05 2.553796e-02 6.620551e-02 1.142371e-01 1.646170e-01</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [6] 2.142204e-01</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">get_torsion</span>(sl_curve))</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] -115.1033091    0.5632915    0.4238968    0.4045585    0.4208142</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [6]    0.4554351</span></span></code></pre></div>
+</div>
+<h3 id="add_shape_descriptors">add_shape_descriptors()</h3>
+<p><code>add_shape_descriptors(x, descriptors = ...)</code> is an S7 generic with methods for <code>streamline</code>, <code>bundle</code>, and <code>bundle_set</code>. The default <code>descriptors</code> is <code>c(&quot;euclidean_length&quot;, &quot;curvilinear_length&quot;, &quot;sinuosity&quot;, &quot;curvature&quot;, &quot;torsion&quot;)</code>.</p>
+<ul>
+<li>For a <code>streamline</code>, scalar descriptors land in <code>@streamline_data</code> and per-point ones in <code>@point_data</code>.</li>
+<li>For a <code>bundle</code>, scalar descriptors are stored as length-<code>S</code> vectors in <code>bundle@streamline_data</code>; per-point ones (<code>curvature</code>, <code>torsion</code>) are stored in each individual streamline’s <code>@point_data</code>. Both are accessible via the subsetting push-down.</li>
+<li>For a <code>bundle_set</code>, the operation is applied per bundle, preserving <code>@bundle_data</code> and <code>@bundle_set_data</code>.</li>
+</ul>
+<p>Unknown descriptor names trigger a structured <code>cli::cli_warn()</code> message.</p>
+<p>Note that <code>get_curvature()</code> and <code>get_torsion()</code> fit cubic smoothing splines and therefore need a streamline with at least four distinct points (the examples below use 10-point streamlines).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>b_long <span class="ot">&lt;-</span> <span class="fu">bundle</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">streamlines =</span> <span class="fu">list</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">streamline</span>(<span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">Y =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">Z =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">9</span>)),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">streamline</span>(<span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">Y =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">Z =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>b_desc <span class="ot">&lt;-</span> <span class="fu">add_shape_descriptors</span>(b_long)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(b_desc<span class="sc">@</span>streamline_data)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;euclidean_length&quot;   &quot;curvilinear_length&quot; &quot;sinuosity&quot;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(b_desc[[<span class="dv">1</span>]]<span class="sc">@</span>point_data)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;curvature&quot; &quot;torsion&quot;</span></span></code></pre></div>
+</div>
+<h2 id="hausdorff-distance">Hausdorff distance</h2>
+<p><code>compute_hausdorff_distance(x, y = NULL)</code> computes the symmetric Hausdorff distance. It dispatches on four cases:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 36%">
+<col style="width: 36%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>x</code></th>
+<th><code>y</code></th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>streamline</code></td>
+<td><code>streamline</code></td>
+<td>Scalar: <code>max(d_H(x→y), d_H(y→x))</code>.</td>
+</tr>
+<tr class="even">
+<td><code>bundle</code></td>
+<td><code>NULL</code></td>
+<td><code>dist</code> object (size <code>n</code>) of all pairwise distances within <code>x</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>bundle</code></td>
+<td><code>streamline</code></td>
+<td>Numeric vector (length <code>n</code>): distance from <code>y</code> to each streamline in <code>x</code>.</td>
+</tr>
+<tr class="even">
+<td><code>bundle</code></td>
+<td><code>bundle</code></td>
+<td><code>dist</code> object over the concatenation of all streamlines of <code>x</code> and <code>y</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sb <span class="ot">&lt;-</span> <span class="fu">streamline</span>(<span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">Y =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>, <span class="at">Z =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>sc <span class="ot">&lt;-</span> <span class="fu">streamline</span>(<span class="at">points =</span> <span class="fu">cbind</span>(<span class="at">X =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">Y =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">Z =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># streamline x streamline -&gt; scalar</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_hausdorff_distance</span>(sb, sc)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 1.732051</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># bundle x missing -&gt; dist object</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>bd <span class="ot">&lt;-</span> <span class="fu">bundle</span>(<span class="at">streamlines =</span> <span class="fu">list</span>(sb, sc))</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="fu">as.matrix</span>(<span class="fu">compute_hausdorff_distance</span>(bd))</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          1        2</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 0.000000 1.732051</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 1.732051 0.000000</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># bundle x streamline -&gt; vector</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_hausdorff_distance</span>(bd, sb)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 0.000000 1.732051</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co"># bundle x bundle -&gt; combined dist object</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>bd2 <span class="ot">&lt;-</span> <span class="fu">bundle</span>(<span class="at">streamlines =</span> <span class="fu">list</span>(sc))</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="fu">as.matrix</span>(<span class="fu">compute_hausdorff_distance</span>(bd, bd2))</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          1        2        3</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 0.000000 1.732051 1.732051</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 1.732051 0.000000 0.000000</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 1.732051 0.000000 0.000000</span></span></code></pre></div>
+</div>
+<p>The core pairwise computation is implemented in C++ (via cpp11). Coordinates are coerced to double precision before being passed to the compiled code, so integer-stored <code>@points</code> matrices (e.g. built from <code>X = 1:5</code>) are handled correctly. Unsupported <code>x</code> types (and invalid <code>y</code>) produce a clear error via the catch-all method.</p>
+<h2 id="coercion">Coercion</h2>
+<h3 id="as_streamline">as_streamline()</h3>
+<p><code>as_streamline(x)</code> returns a <code>streamline</code>:</p>
+<ul>
+<li><code>streamline</code> → returned unchanged (identity).</li>
+<li><code>bundle</code> → the sole streamline (errors if the bundle has ≠ 1 streamlines).</li>
+<li><code>dwiFiber</code> (from dti) → the single fiber as a <code>streamline</code> (errors if multi-fiber; use <code>as_bundle()</code> instead).</li>
+</ul>
+<h3 id="as_bundle">as_bundle()</h3>
+<p><code>as_bundle(x)</code> returns a <code>bundle</code>:</p>
+<ul>
+<li><code>streamline</code> → a single-element <code>bundle</code> (lossless).</li>
+<li><code>bundle</code> → returned unchanged (identity).</li>
+<li><code>dwiFiber</code> → each fiber becomes a <code>streamline</code>. Per-point direction vectors (columns 4–6 of <code>@fibers</code>) are stored as <code>@point_data$direction_x/y/z</code>. Tracking metadata (<code>method</code>, <code>minfa</code>, <code>maxangle</code>) become scalars in <code>@bundle_data</code>; vector metadata (<code>ddim</code>, <code>ddim0</code>, <code>voxelext</code>, <code>orientation</code>) are expanded into individual scalar entries (e.g. <code>voxelext_1</code>, <code>voxelext_2</code>, <code>voxelext_3</code>).</li>
+</ul>
+<h3 id="as_bundle_set">as_bundle_set()</h3>
+<p><code>as_bundle_set(x)</code> returns a <code>bundle_set</code>:</p>
+<ul>
+<li><code>bundle_set</code> → returned unchanged (identity).</li>
+<li><code>bundle</code> → a single-element <code>bundle_set</code>; the optional <code>name</code> argument sets the element name.</li>
+</ul>
+<h3 id="as_dwifiber">as_dwifiber()</h3>
+<p><code>as_dwifiber(x)</code> converts a <code>streamline</code> or <code>bundle</code> to the <code>dwiFiber</code> S4 class from dti. It requires the <code>dti</code> package to be installed. Per-point directions are taken from <code>@point_data$direction_x/y/z</code> when present, otherwise estimated from the coordinates via finite differences (forward / backward at the ends, central elsewhere), then unit-normalised. Bundled metadata under <code>method</code>, <code>minfa</code>, <code>maxangle</code>, <code>level</code>, and <code>source</code> are transferred to the corresponding <code>dwiFiber</code> slots when present.</p>
+<div>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>Because dti loads the <code>rgl</code> package on startup, calling the coercion functions in an environment without a graphics display can print an rgl warning (e.g. <code>&#39;rgl.init&#39; failed</code> or <code>X11 error</code>). That warning comes from rgl, not from fiber, and does not affect the conversion.</p>
+</blockquote>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">requireNamespace</span>(<span class="st">&quot;dti&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  dfi <span class="ot">&lt;-</span> <span class="fu">as_dwifiber</span>(bd)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(dfi)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># round-trip</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_bundle</span>(dfi)<span class="sc">@</span>n_streamlines</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span></code></pre></div>
+</div>
+<h2 id="console-output">Console output</h2>
+<p>All three classes provide <code>format()</code> and <code>print()</code> methods that render cli-styled, ANSI-aware summaries (object class, point/bundle counts, and the per-point, per-streamline, per-bundle, and set-level attribute names). <code>print()</code> also returns the object invisibly, and <code>length()</code>, <code>[[</code>, and <code>[</code> follow the semantics described above.</p>
+<h2 id="the-complete-function-list">The complete function list</h2>
+<p>For the canonical documentation of every generic, method, argument, and return value, see the package reference at <a href="https://tractoverse.github.io/fiber/reference/" class="uri">https://tractoverse.github.io/fiber/reference/</a>.</p>
+
+
+
+
+
+</body></html>

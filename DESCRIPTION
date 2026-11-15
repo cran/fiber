@@ -1,12 +1,12 @@
 Package: fiber
 Type: Package
-Title: S7 Data Structures for Diffusion MRI Tractography
-Version: 0.2.0
+Title: 'S7' Data Structures for Diffusion MRI Tractography
+Version: 0.3.0
 Authors@R: c(
     person(
         given = "Aymeric",
         family = "Stamm",
-        role = c("aut", "cre"),
+        role = c("aut", "cre", "cph"),
         email = "aymeric.stamm@cnrs.fr",
         comment = c(ORCID = "0000-0002-8725-3654")
     ))
@@ -26,18 +26,19 @@ Encoding: UTF-8
 URL: https://github.com/tractoverse/fiber,
         https://tractoverse.github.io/fiber/
 BugReports: https://github.com/tractoverse/fiber/issues
-Imports: cli, methods, S7
-Config/roxygen2/version: 8.0.0
+Imports: cli, methods, rlang, S7
+Config/roxygen2/version: 8.1.1
 Config/roxygen2/markdown: TRUE
-Suggests: dti, tinytest
+VignetteBuilder: quarto, knitr
+Suggests: doclisting, dti, knitr, pkgdown, quarto, rmarkdown, tinytest
 Collate: 'bind.R' 'bundle-set.R' 'bundle.R' 'streamline.R' 'coerce.R'
         'cpp11.R' 'fiber-package.R' 'parametrize.R' 'shape.R' 'utils.R'
         'zzz.R'
 LinkingTo: cpp11
 NeedsCompilation: yes
-Packaged: 2026-07-04 13:48:55 UTC; stamm-a
-Author: Aymeric Stamm [aut, cre] (ORCID:
+Packaged: 2026-11-15 23:31:47 UTC; stamm-a
+Author: Aymeric Stamm [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0002-8725-3654>)
 Maintainer: Aymeric Stamm <aymeric.stamm@cnrs.fr>
 Repository: CRAN
-Date/Publication: 2026-07-04 14:00:02 UTC
+Date/Publication: 2026-11-15 23:50:02 UTC
